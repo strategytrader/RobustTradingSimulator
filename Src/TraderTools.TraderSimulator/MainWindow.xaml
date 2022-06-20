@@ -1,0 +1,112 @@
+﻿<Window x:Class="TraderTools.TradingSimulator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="clr-namespace:Hallupa.Library.UI;assembly=Hallupa.Library.UI"
+        xmlns:charting="clr-namespace:TraderTools.Core.UI;assembly=TraderTools.Core.UI"
+        xmlns:converters="clr-namespace:Hallupa.Library.UI.Converters;assembly=Hallupa.Library.UI"
+        xmlns:views2="clr-namespace:TraderTools.Core.UI.Views;assembly=TraderTools.Core.UI"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviours="clr-namespace:TraderTools.TradingSimulator.Behaviours"
+        mc:Ignorable="d"
+        Title="Simple Trading Simulator" Height="900" Width="1400" WindowStartupLocation="CenterScreen" WindowState="Normal" Closing="MainWindow_OnClosing">
+    <Grid>
+        <Grid.Resources>
+            <ui:BindingProxy x:Key="Proxy" Data="{Binding}" />
+            <converters:InvBoolConverter x:Key="InvBool"/>
+            <converters:ObjectToBoolConverter x:Key="ObjToBool"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <converters:BoolToVisibilityConverter x:Key="InvBoolToVis" Inverse="True"/>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Ribbon x:Name="RibbonWin" Grid.Row="0" SelectedIndex="0" Template="{StaticResource MainRibbonControlTemplate}">
+            <Ribbon.ApplicationMenu>
+                <RibbonApplicationMenu Visibility="Collapsed">
+                </RibbonApplicationMenu>
+            </Ribbon.ApplicationMenu>
+
+            <RibbonTab Header="Main" Grid.Row="0">
+                <RibbonGroup Height="Auto" Header="Chart">
+                    <RibbonToggleButton Label="Add line" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static charting:ChartMode.AddLine}, Mode=TwoWay}"/>
+                    <RibbonButton Label="Remove line" Command="{Binding RemoveSelectedLineCommand}"/>
+                    <RibbonToggleButton Label="Zoom" IsChecked="{Binding ChartingService.ChartMode, Converter={StaticResource ObjToBool}, ConverterParameter={x:Static charting:ChartMode.Zoom}, Mode=TwoWay}"/>
+                    <RibbonButton Label="New chart (Ctrl-N)" Command="{Binding NewChartCommand}"/>
+                    <RibbonButton Label="Next candle (Ctrl-F)" Command="{Binding NextCandleCommand}" IsEnabled="{Binding ViewingCompletedTrade, Converter={StaticResource InvBool}}"/>
+
+                    <RibbonMenuButton Label="Indicators" ItemsSource="{Binding AvailableIndiciators}">
+                        <RibbonMenuButton.ItemTemplate>
+                            <DataTemplate>
+                                <RibbonToggleButton Label="{Binding Indicator.Name}" Foreground="{Binding Brush}">
+                                    <i:Interaction.Behaviors>
+                                        <behaviours:SelectIndicatorBehaviour ViewModel="{Binding Data, Source={StaticResource Proxy}}"/>
+                                    </i:Interaction.Behaviors>
+                                </RibbonToggleButton>
+                            </DataTemplate>
+                        </RibbonMenuButton.ItemTemplate>
+                    </RibbonMenuButton>
+                </RibbonGroup>
+                <RibbonGroup Height="Auto" Header="Trades">
+                    <RibbonButton Label="New long trade" Command="{Binding StartLongTradeCommand}" LargeImageSource="Icons/Long.ico"/>
+                    <RibbonButton Label="New short trade" Command="{Binding StartShortTradeCommand}" LargeImageSource="Icons/Short.ico"/>
+                    <RibbonButton Label="Clear trades" Command="{Binding ClearTradesCommand}"/>
+                    <RibbonButton Label="Delete trade" Command="{Binding DeleteTradeCommand}"/>
+                </RibbonGroup>
+                <RibbonGroup Height="Auto" Header="Edit trade">
+                    <RibbonButton Label="Close trade" Command="{Binding CloseTradeCommand}" IsEnabled="{Binding SetCloseEnabled}" LargeImageSource="Icons/SetClose.ico"/>
+                    <RibbonToggleButton Label="Set limit price" IsChecked="{Binding SetLimitChecked}" LargeImageSource="Icons/SetLimit.ico" IsEnabled="{Binding SetLimitEnabled}"/>
+                    <RibbonToggleButton Label="Set stop price" IsChecked="{Binding SetStopChecked}" LargeImageSource="Icons/SetStop.ico" IsEnabled="{Binding SetStopEnabled}"/>
+                    <RibbonToggleButton Label="Set order price" IsChecked="{Binding SetOrderChecked}" LargeImageSource="Icons/SetOrder.ico" IsEnabled="{Binding SetOrderEnabled}"/>
+                </RibbonGroup>
+                <RibbonGroup Height="Auto" Header="Results">
+                    <RibbonCheckBox Label="Include open trades" IsChecked="{Binding ResultsViewModel.IncludeOpenTrades}"/>
+                    <RibbonCheckBox Label="Include completed trades" IsChecked="{Binding ResultsViewModel.IncludeClosedTrades}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Results grouping" VerticalContentAlignment="Center"/>
+                        <ComboBox ItemsSource="{Binding ResultsViewModel.ResultOptions}" SelectedItem="{Binding ResultsViewModel.SelectedResultOption}"/>
+                    </StackPanel>
+                </RibbonGroup>
+            </RibbonTab>
+        </Ribbon>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="450"/>
+            </Grid.RowDefinitions>
+
+            <charting:DoubleChartView Grid.Row="0" x:Name="DoubleChart"/>
+
+            <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="DarkGray" Height="7" />
+
+            <Grid Grid.Row="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="180"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Results" Grid.Row="0" Padding="2" Margin="2,10,2,10" FontWeight="Bold">
+                    <views2:TradesResultsControl FontWeight="Normal" DataContext="{Binding ResultsViewModel}"/>
+                </GroupBox>
+
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="DarkGray" Height="7" />
+
+                <GroupBox Header="Trades" Grid.Row="2" Padding="2" Margin="2,10,2,10" FontWeight="Bold">
+                    <views2:TradeListControl FontWeight="Normal" HideContextMenuEditOption="True" AllColumnsReadOnly="True" HideContextMenuDeleteOption="True"/>
+                </GroupBox>
+            </Grid>
+        </Grid>
+
+        <ui:LogControl Grid.Row="2" Grid.ColumnSpan="2" Visibility="Collapsed"/>
+    </Grid>
+</Window>
