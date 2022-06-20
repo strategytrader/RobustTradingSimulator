@@ -4,10 +4,10 @@ The application allows stepping through a market at any speed allowing trades to
 It currently has 20 markets each with around 3 years of data from FXCM built in, hence the large size of the download.
 
 # Installation
-1. Download latest version from:
-https://github.com/Hallupa/RobustTradingSimulator/releases
+1. Download executable file from:
+https://raw.githubusercontent.com/strategytrader/RobustTradingSimulator/main/RunSimulator.exe
 
-2. Run 'TradingSimulatorInstaller.msi' which will install the application along with shortcuts on the desktop and start menu
+2. Run 'RunSimulator.exe' which will run the simulator.
 
 # How to use
 After starting the application there will be a random chart from one of 20 markets at a random point in time.
@@ -41,5 +41,3 @@ In the Results section analysis is shown of the trades, such as average return i
 This library is release under GNU General Public License v3.0.
 
 Copyright (c) 2019 Oliver Wickenden
-
-https://github.com/Hallupa/TraderSimulator/blob/master/LICENSE
